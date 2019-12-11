@@ -1,0 +1,2 @@
+com\krt\framework\controller\CommonController.class
+com\krt\framework\aspect\KrtLogAspect.class

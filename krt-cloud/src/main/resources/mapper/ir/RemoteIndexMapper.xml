@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.krt.ir.mapper.RemoteIndexMapper">
+
+    <sql id="Base_Column_List">
+        id,category_id,category_name,brand_id,brand_name,city_code,city_name,operator_id,operator_name,protocol,remote,remote_map,sub_cate,status,priority,remote_number,operator_name_tw,category_name_tw,brand_name_tw,city_name_tw,binary_md5,contributor,update_time
+    </sql>
+
+    <!-- 带参数查询遥控指示列表 -->
+    <select id="selectPageList" resultType="com.krt.ir.entity.RemoteIndex">
+        select
+            <include refid="Base_Column_List"/>
+        from remote_index where 1=1
+            <if test="categoryName !=null and categoryName!=''">
+                    and category_name like concat('%',#{categoryName},'%')
+            </if>
+            <if test="brandName !=null and brandName!=''">
+                    and brand_name like concat('%',#{brandName},'%')
+            </if>
+            <if test="cityName !=null and cityName!=''">
+                    and city_name like concat('%',#{cityName},'%')
+            </if>
+            <if test="operatorName !=null and operatorName!=''">
+                    and operator_name like concat('%',#{operatorName},'%')
+            </if>
+            <if test="status !=null and status!=''">
+                    and status like concat('%',#{status},'%')
+            </if>
+    </select>
+
+    <!--通过id查询遥控指示-->
+    <select id="selectRemoteIndexById" resultType="java.util.Map">
+       SELECT category_name,brand_name,city_name,operator_name,protocol,remote_map,`status`,priority,remote_number,operator_name_tw,category_name_tw,brand_name_tw,city_name_tw,update_time
+       FROM remote_index
+       where id=#{id}
+    </select>
+
+
+    <!-- 根据码库id 查询 remote -->
+    <select id="selectRemoteById" parameterType="string" resultType="string">
+        select remote_map from remote_index where remote = #{id}
+    </select>
+
+</mapper>
+

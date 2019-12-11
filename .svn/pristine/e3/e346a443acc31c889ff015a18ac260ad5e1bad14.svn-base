@@ -1,0 +1,206 @@
+package com.krt.api.controller.cloud;
+
+import com.krt.cloud.service.DeviceService;
+import com.krt.common.annotation.KrtIgnoreAuth;
+import com.krt.common.bean.ReturnBean;
+import com.krt.mqtt.client.netty.NettyClient;
+import com.krt.mqtt.client.utils.MessageIdUtil;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequestMapping("api/cmd")
+@Api(tags = "5、下发命令")
+@RestController
+@Slf4j
+public class ApiCommandController {
+
+    @Autowired
+    private DeviceService deviceService;
+
+    private static Object lock = new Object();
+
+//    @KrtIgnoreAuth
+//    @PostMapping("swt")
+//    @ApiOperation(value = "下发开关命令")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "deviceId", value = "设备编号", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "ctrl", value = "串口", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "onOff", value = "开关 0关1开", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "time", value = "时间 0永久", required = true)
+//    })
+//    public ReturnBean swt(
+//            @RequestParam("deviceId") String d,
+//            @RequestParam("ctrl") String c,
+//            @RequestParam("onOff") String o,
+//            @RequestParam("time") String t) {
+//        String[] deviceIds = d.split(",");
+//        String[] ctrl = c.split(",");
+//        String[] onOff = o.split(",");
+//        String[] time = t.split(",");
+//        List<Map> devices = deviceService.selectByDeviceIds(deviceIds);
+//        if( deviceIds.length != devices.size() ){
+//            log.info("有设备查找不到：" + (deviceIds.length - devices.size()));
+//        }
+//        for (Map device : devices){
+//            Long productId = (Long)device.get("productId");
+//            Long deviceId  = (Long)device.get("deviceId");
+//            int index = getIndex(deviceIds, deviceId);
+//
+////            JSONObject cmd = new JSONObject(true);
+////            cmd.put("CMD", 21);
+//            Integer[] ctrlArr = new Integer[5];
+//            Integer[] timeArr = new Integer[5];
+//            for(int i=0; i<5; i++){
+//                if( i != Integer.valueOf(ctrl[index])-1 ){
+//                    ctrlArr[i] = -1;
+//                    timeArr[i] = -1;
+//                }else{
+//                    ctrlArr[i] = Integer.valueOf(onOff[index]);
+//                    timeArr[i] = Integer.valueOf(time[index]);
+//                }
+//            }
+////            cmd.put("CTRL", ctrlArr);
+////            cmd.put("TIME", timeArr);
+//            Integer ver = CommandIdUtil.commandId(deviceId);
+////            cmd.put("VER", ver);
+//            synchronized (lock) {
+//                JSONObject cmd = mergeVerMessage(deviceId, 21, ctrlArr, timeArr, ver);
+//                NettyClient.sendCmd(deviceId, MessageIdUtil.messageId(), "/sys/" + productId + "/" + deviceId + "/thing/" + TopicNameConst.CMD_SET, cmd.toString().getBytes(), MqttQoS.AT_LEAST_ONCE, false, ver, true);
+//            }
+//        }
+//        return ReturnBean.ok();
+//    }
+//
+////    @KrtIgnoreAuth
+////    @PostMapping("sensor")
+////    @ApiOperation(value = "下发传感器命令")
+////    @ApiImplicitParams({
+////            @ApiImplicitParam(paramType = "query", dataType = "Long", name = "id", value = "设备ID", required = true, allowMultiple = true),
+////            @ApiImplicitParam(paramType = "query", dataType = "boolean", name = "isOn", value = "是否开启", required = true),
+////    })
+////    public ReturnBean sensor(Integer[] id, Boolean isOn) {
+////        return ReturnBean.ok();
+////    }
+//
+//    @KrtIgnoreAuth
+//    @PostMapping("ac")
+//    @ApiOperation(value = "下发空调命令")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "deviceId", value = "设备编号", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "power", value = "开关", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "mode", value = "模式", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "temp", value = "温度", required = true),
+//            @ApiImplicitParam(paramType = "query", dataType = "String", name = "windSpeed", value = "风速", required = true),
+//    })
+//    public ReturnBean ac(
+//            @RequestParam("deviceId") String d,
+//            @RequestParam("power") String p,
+//            @RequestParam("mode") String m,
+//            @RequestParam("temp") String t,
+//            @RequestParam("windSpeed") String w
+//    ) {
+//        String[] deviceIds = d.split(",");
+//        String[] power = p.split(",");
+//        String[] mode = m.split(",");
+//        String[] temp = t.split(",");
+//        String[] windSpeed = w.split(",");
+//        List<Map> devices = deviceService.selectByDeviceIds(deviceIds);
+//        if( deviceIds.length != devices.size() ){
+//            log.info("有设备查找不到：" + (deviceIds.length - devices.size()));
+//        }
+//        for (Map device : devices){
+//            Long productId = (Long)device.get("productId");
+//            Long deviceId  = (Long)device.get("deviceId");
+//            int index = getIndex(deviceIds, deviceId);
+//
+//            JSONObject ac = new JSONObject();
+//            ac.put("PW", power[index]);
+//            ac.put("MD", mode[index]);
+//            ac.put("TP", temp[index]);
+//            ac.put("WS", windSpeed[index]);
+//            ac.put("WD", 0);
+//
+//            JSONObject cmd = new JSONObject();
+//            cmd.put("CI", Constants.CategoryID.AIR_CONDITIONER.getValue());
+//            cmd.put("BT", Constants.BinaryType.TYPE_HEXDECIMAL.getValue());
+//            cmd.put("KC", 0);
+//            cmd.put("FN", "irda_"+device.get("fileName")+".bin");
+//            cmd.put("AC", ac);
+//            //String id = deviceId + ver;
+//            //cmd.put("ID", id);
+//            Integer ver = CommandIdUtil.commandId(deviceId);
+//            cmd.put("VER", ver);
+//
+//            NettyClient.sendCmd(deviceId, MessageIdUtil.messageId(), "/sys/" + productId + "/" + deviceId + "/thing/" + TopicNameConst.IR_SET, cmd.toString().getBytes(), MqttQoS.AT_LEAST_ONCE, false, ver, false);
+//        }
+//        return ReturnBean.ok();
+//    }
+//
+//    private JSONObject mergeVerMessage(Long deviceId, Integer cmd, Integer[] newCtrl, Integer[] newTime, Integer ver){
+//        MqttSendMessage message = CommonConst.verMessages.get(deviceId);
+//        if( message != null ){
+//            if( ver == 0 || ver > message.getVer() ) {
+//                String oldContent = MqttUtil.byteToString(message.getPayload());
+//                JSONObject oldData = JSONObject.parseObject(oldContent);
+//                JSONArray oldCtrl = oldData.getJSONArray("CTRL");
+//                JSONArray oldTime = oldData.getJSONArray("TIME");
+//
+//                for (int i=0;i<oldCtrl.size();i++){
+//                    if( oldCtrl.getInteger(i) != -1 && newCtrl[i] == -1 ){
+//                        newCtrl[i] = oldCtrl.getInteger(i);
+//                        newTime[i] = oldTime.getInteger(i);
+//                    }
+//                }
+//            }
+//        }
+//        JSONObject retval = new JSONObject(true);
+//        retval.put("CMD", cmd);
+//        retval.put("CTRL", newCtrl);
+//        retval.put("TIME", newTime);
+//        retval.put("VER", ver);
+//        return retval;
+//    }
+//
+//    private int getIndex(String[] ids, Long id){
+//        for (int i = 0; i < ids.length; i++){
+//            if( Long.valueOf(ids[i]).equals(id) ){
+//                return i;
+//            }
+//        }
+//        return -1;
+//    }
+
+
+
+
+    @KrtIgnoreAuth
+    @PostMapping("send")
+    @ApiOperation(value = "下发命令")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "topicName", value = "主题名", required = true, allowMultiple = true),
+            @ApiImplicitParam(paramType = "query", dataType = "String", name = "topicContent", value = "主题内容", required = true, allowMultiple = true)
+    })
+    public ReturnBean send(
+            @RequestParam("topicName") String[] topicNames,
+            @RequestParam("topicContent") String[] topicContents) {
+
+        for (int i=0; i<topicNames.length; i++){
+            String topicName = topicNames[i];
+            String topicContent = topicContents[i];
+
+            synchronized (lock) {
+                NettyClient.sendCmd(MessageIdUtil.messageId(), topicName, topicContent.getBytes(), MqttQoS.AT_LEAST_ONCE, false);
+            }
+        }
+        return ReturnBean.ok();
+    }
+}

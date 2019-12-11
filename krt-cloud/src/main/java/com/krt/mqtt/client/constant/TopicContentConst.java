@@ -1,0 +1,10 @@
+package com.krt.mqtt.client.constant;
+
+public class TopicContentConst {
+
+//    public static String ACK_VER = "VER";
+//
+//    public static String ACK_BACK = "BACK";
+//
+//    public static String ACK_BACK_OK = "OK";
+}

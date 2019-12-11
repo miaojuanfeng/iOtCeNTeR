@@ -1,0 +1,12 @@
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\fastdfs\config\FastdfsConfig.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\entity\FileResult.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\fastdfs\contant\FastdfsConstant.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\fastdfs\enums\UploadTypeEnum.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\service\IFileResultService.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\controller\FastdfsUploadController.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\controller\FileResultController.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\util\FileMd5Utils.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\service\impl\LocationFileResultServiceImpl.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\controller\LocationUploadController.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\mapper\FileResultMapper.java
+E:\workspace-iot\IOT_CLOUD\krt-plugins\krt-plugin-file\src\main\java\com\krt\file\service\impl\FastdfsFileResultServiceImpl.java

@@ -1,0 +1,42 @@
+package com.krt.access.service;
+
+import com.krt.access.entity.TCallback;
+import com.krt.common.base.IBaseService;
+
+import java.util.Map;
+
+
+/**
+ * 回调列表服务接口层
+ *
+ * @author 郭明德
+ * @version 1.0
+ * @date 2019年08月08日
+ */
+public interface ITCallbackService extends IBaseService<TCallback>{
+
+//    /**
+//     * 回调地址测试
+//     * @param id 回调id
+//     * @param url 回调地址
+//     * @return 回调地址是否可用
+//     */
+//    Boolean test(Integer id, String url);
+
+//    /**
+//     * 插入一条数据，获取插入的id
+//     * @param callback
+//     * @return
+//     */
+//    int insertCallbackByMap(TCallback callback);
+//
+//    /**
+//     * 设置Url 状态
+//     * @param id
+//     * @param status
+//     */
+//    void updateURLStatus(int id, int status);
+
+    TCallback selectCallbackUrl(Integer appId);
+
+}

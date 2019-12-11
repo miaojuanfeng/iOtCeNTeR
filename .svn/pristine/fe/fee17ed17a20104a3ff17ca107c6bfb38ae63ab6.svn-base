@@ -1,0 +1,3 @@
+com\krt\websocket\interceptor\WebSocketInterceptor.class
+com\krt\websocket\config\WebSocketConfig.class
+com\krt\websocket\handler\TestHandler.class

@@ -1,0 +1,48 @@
+package com.krt.cloud.mapper;
+
+import com.krt.common.base.BaseMapper;
+import com.krt.cloud.entity.Device;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Map;
+import java.util.List;
+
+/**
+ * @author FuCongYuan
+ * @version 1.0
+ * @Description: 我的设备映射层
+ * @date 2019-04-13 10:14:32
+ */
+@Mapper
+public interface DeviceMapper extends BaseMapper<Device>{
+
+    List<Map> selectByProductId(Integer id);
+
+    Map checkAvailable(Map map);
+
+    List<Map> srcDeviceName();
+
+    void deleteDeviceById(Integer id);
+
+    void deleteDeviceByIds(String[] ids);
+
+    void updateDeviceState(@Param("state") String state, @Param("id") String id);
+
+    Device selectEntityById(@Param("id") Integer id);
+
+    List<Map> selectByDevType();
+
+    List<Device> selectByIds(Integer[] ids);
+
+    List<Map> selectByDeviceIds(String[] deviceIds);
+
+    List<Map> selectDeviceList();
+
+    List<Map> selectCodeBank(Map para);
+
+    List<Device> listDevices();
+
+    List<Device> selectDeviceByProductId(@Param("id") Integer id);
+
+}

@@ -1,0 +1,23 @@
+package com.krt.theme.mapper;
+
+import com.krt.common.base.BaseMapper;
+import com.krt.theme.entity.Theme;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * 主题表映射层
+ *
+ * @author 刘威
+ * @version 1.0
+ * @date 2019年10月14日
+ */
+@Mapper
+public interface ThemeMapper extends BaseMapper<Theme>{
+
+    /**
+     * 通过theme获取
+     * @param theme
+     * @return
+     */
+    Theme getByTheme(String theme);
+}

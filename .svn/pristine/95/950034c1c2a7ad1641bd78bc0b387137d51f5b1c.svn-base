@@ -1,0 +1,244 @@
+package com.krt.mqtt.client.netty;
+
+import com.krt.access.thread.CallbackThread;
+import com.krt.mqtt.client.beans.MqttSendMessage;
+import com.krt.mqtt.client.constant.CommonConst;
+import com.krt.mqtt.client.constant.MqttMessageStateConst;
+import com.krt.mqtt.client.thread.KeepAliveThread;
+import com.krt.mqtt.client.thread.SendMessageThread;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.mqtt.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Slf4j
+@Component
+public class NettyClient implements ApplicationContextAware {
+
+    @Autowired
+    private static NettyClientInitializer nettyClientInitializer = null;
+
+    private static Bootstrap bootstrap = null;
+
+    private static Channel channel = null;
+
+    private static EventLoopGroup group = null;
+
+    private static Object lock = new Object();
+
+    /**
+     * Bootstrap 客户端初始化
+     */
+    public static void initBootstrap() {
+        group = new NioEventLoopGroup();
+        bootstrap = new Bootstrap();
+        bootstrap.group(group).channel(NioSocketChannel.class);
+        bootstrap.handler(nettyClientInitializer);
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+    }
+
+    /**
+     * 获得连接通道 channel
+     * @return
+     */
+    public static void initChannel() {
+        if( bootstrap == null ){
+            initBootstrap();
+        }
+        try {
+            channel = bootstrap.connect(CommonConst.HOST, CommonConst.PORT).sync().channel();
+        } catch (InterruptedException e) {
+            log.info("连接MQTT服务器失败：" + CommonConst.HOST + ":" + CommonConst.PORT);
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean writeAndFlush(Object content) throws InterruptedException {
+        synchronized (lock) {
+            if (channel == null || !channel.isActive() || !channel.isWritable()) {
+                initChannel();
+                Thread.sleep(1000);
+            }
+        }
+        if (channel != null && channel.isActive() && channel.isWritable()) {
+            channel.writeAndFlush(content);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean sendAck(Integer messageId, String topicName, byte[] bytes){
+        try {
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE,false,0);
+            MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(topicName, messageId);
+            MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, Unpooled.copiedBuffer(bytes));
+            // 增加引用计数
+            mqttPublishMessage.payload().retain();
+
+            return writeAndFlush(mqttPublishMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean sendCmd(Integer messageId, String topicName, byte[] bytes, MqttQoS mqttQoS, boolean isDup){
+        try {
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, isDup, mqttQoS,false,0);
+            MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(topicName, messageId);
+            MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, Unpooled.copiedBuffer(bytes));
+            // 增加引用计数
+            mqttPublishMessage.payload().retain();
+
+            boolean retval = writeAndFlush(mqttPublishMessage);
+
+            if( MqttQoS.AT_LEAST_ONCE.equals(mqttQoS) && !isDup ){
+                saveSendMessage(messageId, topicName, bytes, mqttQoS, MqttMessageStateConst.PUB);
+            }
+
+            return retval;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static void saveSendMessage(int messageId, String topicName, byte[] payload, MqttQoS mqttQoS, int state){
+        MqttSendMessage mqttSendMessage = new MqttSendMessage();
+        mqttSendMessage.setMessageId(messageId);
+        mqttSendMessage.setTopicName(topicName);
+        mqttSendMessage.setPayload(payload);
+        mqttSendMessage.setState(state);
+        mqttSendMessage.setMqttQoS(mqttQoS);
+        mqttSendMessage.setCtx(channel);
+        mqttSendMessage.setSendTime(new Date().getTime());
+        mqttSendMessage.setResendCount(1);
+//        mqttSendMessage.setVer(ver);
+//        mqttSendMessage.setMultiport(multiport);
+//        mqttSendMessage.setDeviceId(deviceId);
+        CommonConst.sendMessages.put(messageId, mqttSendMessage);
+    }
+
+    public static void resendSendMessage(){
+        for (Integer messageId : CommonConst.sendMessages.keySet()) {
+           MqttSendMessage mqttSendMessage = CommonConst.sendMessages.get(messageId);
+           if (mqttSendMessage.getCtx() != null && mqttSendMessage.getCtx().isActive() && mqttSendMessage.getCtx().isWritable()) {
+               if (mqttSendMessage.getState() == MqttMessageStateConst.PUB) {
+                   if (mqttSendMessage.getResendCount() > CommonConst.MAX_RESEND_COUNT) {
+                       log.error("未发送消息（" + messageId + "）超过最大重发次数，已忽略该消息");
+                       CommonConst.sendMessages.remove(messageId);
+                       continue;
+                   }
+                   if (checkResendTime(mqttSendMessage.getSendTime(), mqttSendMessage.getResendCount())) {
+                       sendCmd(mqttSendMessage.getMessageId(), mqttSendMessage.getTopicName(), mqttSendMessage.getPayload(), mqttSendMessage.getMqttQoS(), true);
+                       mqttSendMessage.setSendTime(new Date().getTime());
+                       mqttSendMessage.setResendCount(mqttSendMessage.getResendCount()+1);
+                   }
+               } else {
+                   log.error("未完成发布报文（" + messageId + "）状态错误（" + mqttSendMessage.getMqttQoS() + ", " + mqttSendMessage.getState() + "）");
+               }
+           } else {
+               /**
+                * 通道已关闭，删除消息
+                */
+               CommonConst.sendMessages.remove(messageId);
+           }
+        }
+    }
+
+//    public static void resendVerMessage(){
+//        for (Long deviceId : CommonConst.verMessages.keySet()) {
+//            MqttSendMessage mqttSendMessage = CommonConst.verMessages.get(deviceId);
+//            if (mqttSendMessage.getCtx() != null && mqttSendMessage.getCtx().isActive() && mqttSendMessage.getCtx().isWritable()) {
+//                if (mqttSendMessage.getState() == MqttMessageStateConst.PUB) {
+//                    if (mqttSendMessage.getResendCount() > CommonConst.MAX_RESEND_COUNT) {
+//                        log.error("未发送命令（" + deviceId + "）超过最大重发次数，已忽略该命令");
+//                        CommonConst.verMessages.remove(deviceId);
+//                        continue;
+//                    }
+//                    if (checkResendTime(mqttSendMessage.getSendTime(), mqttSendMessage.getResendCount()*5)) {
+//                        sendCmd(mqttSendMessage.getDeviceId(), mqttSendMessage.getMessageId(), mqttSendMessage.getTopicName(), mqttSendMessage.getPayload(), mqttSendMessage.getMqttQoS(), true, mqttSendMessage.getVer(), mqttSendMessage.isMultiport());
+//                        mqttSendMessage.setSendTime(new Date().getTime());
+//                        mqttSendMessage.setResendCount(mqttSendMessage.getResendCount()+1);
+//                    }
+//                } else {
+//                    log.error("未完成发布命令（" + deviceId + "）状态错误（" + mqttSendMessage.getMqttQoS() + ", " + mqttSendMessage.getState() + "）");
+//                }
+//            } else {
+//                /**
+//                 * 通道已关闭，删除消息
+//                 */
+//                CommonConst.verMessages.remove(deviceId);
+//            }
+//        }
+//    }
+
+    private static boolean checkResendTime(long sendTime, long interval) {
+        return System.currentTimeMillis()-sendTime>=interval*1000;
+    }
+
+    /*public static void main(String[] args){
+
+        JSONObject json = new JSONObject();
+        json.put("CMD", 0);
+        json.put("ID", "07978356742");
+        json.put("SIM", "07978356792");
+        json.put("KEY", "6C8BB7DCCE219283A153FC75C7687273");
+        json.put("channelID", "b4df3465");
+
+        // 解析content中的字段
+        JSONObject jsonContent = JSONObject.fromObject("{\"CMD\":11,\"ID\":\"865192040645037\",\"CSQ\":\"-61\",\"MACHINE\":\"0X03\",\"ORDER\":[0,1,2,3,4,5,6,7,8,9]}");
+        json.put("TargetCMD", 12);
+        json.put("TargetID", jsonContent.get("ID"));
+        json.put("MACHINE", jsonContent.get("MACHINE"));
+        json.put("ORDER", jsonContent.get("ORDER"));
+
+        initChannel();
+        JSONObject json = new JSONObject();
+        json.put("CMD", 0);
+        json.put("ID", "07978356742");
+        json.put("SIM", "07978356792");
+        json.put("KEY", "6C8BB7DCCE219283A153FC75C7687273");
+        json.put("channelID", "00000");
+
+        // 解析content中的字段
+        json.put("TargetCMD", 12);
+        json.put("TargetID", "123");
+        json.put("MACHINE", "213");
+        json.put("ORDER", "123");
+
+            NettyClient.sendMsg(json.toString());
+        try {
+            if( writeAndFlush(json.toString()) ) {
+                System.out.println("YES");
+            }else{
+                System.out.println("NO");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+   @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if( nettyClientInitializer == null ){
+            nettyClientInitializer = applicationContext.getBean(NettyClientInitializer.class);
+        }
+        //initChannel();
+    }
+
+}

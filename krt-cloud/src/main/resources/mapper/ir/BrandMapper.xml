@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.krt.ir.mapper.BrandMapper">
+
+    <sql id="Base_Column_List">
+        id,name,category_id,category_name,status,update_time,priority,name_en,name_tw,contributor
+    </sql>
+
+    <!-- 带参数查询品牌表列表 -->
+    <select id="selectPageList" resultType="com.krt.ir.entity.Brand">
+        select
+            <include refid="Base_Column_List"/>
+            from brand
+            where category_id = 1
+            <if test="name !=null and name!=''">
+                  and name like concat('%',#{name},'%')
+            </if>
+    </select>
+
+    <!-- 根据品牌id 查询品牌名称-->
+    <select id="selectNameById" resultType="string" parameterType="integer">
+        select name from brand where id = #{id}
+    </select>
+
+</mapper>
+

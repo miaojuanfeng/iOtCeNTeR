@@ -1,0 +1,19 @@
+package com.krt.cloud.service.impl;
+
+import com.krt.common.base.BaseServiceImpl;
+import org.springframework.stereotype.Service;
+import com.krt.cloud.entity.DeviceCommand;
+import com.krt.cloud.mapper.DeviceCommandMapper;
+import com.krt.cloud.service.DeviceCommandService;
+
+
+/**
+ * @author LiXiang
+ * @version 1.0
+ * @Description: 云回复命令服务接口实现层
+ * @date 2019-04-12 10:53:00
+ */
+@Service
+public class DeviceCommandServiceImpl extends BaseServiceImpl<DeviceCommandMapper,DeviceCommand> implements DeviceCommandService {
+
+}

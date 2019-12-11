@@ -1,0 +1,21 @@
+package com.krt.cloud.service;
+
+import com.krt.cloud.entity.Product;
+import com.krt.common.base.IBaseService;
+import java.util.Map;
+import java.util.List;
+
+/**
+ * @author 郭明德
+ * @version 1.0
+ * @Description: 产品表服务接口层
+ * @date 2019-04-08 21:21:42
+ */
+public interface ProductService extends IBaseService<Product> {
+
+    String checkProductName(String name);
+
+    List<Map> selectNameAndId();
+
+    Product selectByProductId(Long productId);
+}

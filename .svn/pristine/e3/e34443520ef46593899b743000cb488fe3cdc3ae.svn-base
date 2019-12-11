@@ -1,0 +1,33 @@
+package com.krt.mqtt.client.thread;
+
+
+import com.krt.mqtt.client.netty.NettyClient;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SendMessageThread extends Thread{
+
+    private Object lock = new Object();
+
+    private final long timeout = 1000;
+
+    public SendMessageThread(){
+        log.info("开启MQTT重发线程");
+        this.start();
+    }
+
+    @Override
+    public void run() {
+        while(true){
+            synchronized (lock){
+                try {
+                    NettyClient.resendSendMessage();
+//                    NettyClient.resendVerMessage();
+                    lock.wait(timeout);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}

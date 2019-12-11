@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/IOT_CLOUD.iml" filepath="$PROJECT_DIR$/.idea/IOT_CLOUD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-api/krt-api.iml" filepath="$PROJECT_DIR$/krt-api/krt-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-cloud/krt-cloud.iml" filepath="$PROJECT_DIR$/krt-cloud/krt-cloud.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-common/krt-common.iml" filepath="$PROJECT_DIR$/krt-common/krt-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-framework/krt-framework.iml" filepath="$PROJECT_DIR$/krt-framework/krt-framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-gen/krt-gen.iml" filepath="$PROJECT_DIR$/krt-gen/krt-gen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-monitor/krt-monitor.iml" filepath="$PROJECT_DIR$/krt-monitor/krt-monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-activemq/krt-plugin-activemq.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-activemq/krt-plugin-activemq.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-captcha/krt-plugin-captcha.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-captcha/krt-plugin-captcha.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-ehcache/krt-plugin-ehcache.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-ehcache/krt-plugin-ehcache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-file/krt-plugin-file.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-file/krt-plugin-file.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-jpush/krt-plugin-jpush.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-jpush/krt-plugin-jpush.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-lucene/krt-plugin-lucene.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-lucene/krt-plugin-lucene.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-mail/krt-plugin-mail.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-mail/krt-plugin-mail.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-oauth2/krt-plugin-oauth2.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-oauth2/krt-plugin-oauth2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-quartz/krt-plugin-quartz.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-quartz/krt-plugin-quartz.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-redis/krt-plugin-redis.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-redis/krt-plugin-redis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugin-websocket/krt-plugin-websocket.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugin-websocket/krt-plugin-websocket.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-plugins/krt-plugins.iml" filepath="$PROJECT_DIR$/krt-plugins/krt-plugins.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-sys/krt-sys.iml" filepath="$PROJECT_DIR$/krt-sys/krt-sys.iml" />
+      <module fileurl="file://$PROJECT_DIR$/krt-web/krt-web.iml" filepath="$PROJECT_DIR$/krt-web/krt-web.iml" />
+    </modules>
+  </component>
+</project>

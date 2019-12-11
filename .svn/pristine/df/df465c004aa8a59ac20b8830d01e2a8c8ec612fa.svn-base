@@ -1,0 +1,33 @@
+package com.krt.cloud.mapper;
+
+import com.krt.cloud.entity.Product;
+import com.krt.common.base.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Map;
+import java.util.List;
+
+/**
+ * @author 郭明德
+ * @version 1.0
+ * @Description: 产品表映射层
+ * @date 2019-04-08 21:21:42
+ */
+@Mapper
+public interface ProductMapper extends BaseMapper<Product>{
+
+    /**
+     * 插入产品时，判断产品名称是否存在
+     */
+    String checkProductName(@Param("name") String name);
+
+    /**
+     * 设备管理需要 查询产品名称和id
+     * @return
+     */
+    List<Map> selectNameAndId();
+
+    Product selectByProductId(@Param("productId") Long productId);
+
+}

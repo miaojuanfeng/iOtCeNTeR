@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.cloud.mapper.DeviceMapper">
+
+    <resultMap id="BaseResultMap" type="com.krt.cloud.entity.Device">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+            <result column="name" jdbcType="VARCHAR" property="name"/>
+            <result column="device_id" jdbcType="BIGINT" property="deviceId"/>
+            <result column="device_address" jdbcType="VARCHAR" property="deviceAddress"/>
+            <result column="device_code" jdbcType="VARCHAR" property="deviceCode"/>
+            <result column="verify_code" jdbcType="VARCHAR" property="verifyCode"/>
+            <result column="device_type" jdbcType="VARCHAR" property="deviceType"/>
+            <result column="state" jdbcType="INTEGER" property="state"/>
+            <result column="inserter" jdbcType="INTEGER" property="inserter"/>
+            <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+            <result column="updater" jdbcType="INTEGER" property="updater"/>
+            <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <!-- 根据ID查询我的设备 -->
+    <select id="selectByIds" resultType="com.krt.cloud.entity.Device">
+        select
+            *
+        from t_device
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 根据deviceId查询我的设备 -->
+    <select id="selectByDeviceIds" resultType="java.util.Map">
+        select
+        td.*, tp.product_id productId
+        from t_device td
+        left join t_product tp on td.product_id = tp.id
+        where td.device_id in
+        <foreach item="deviceId" collection="array" open="(" separator="," close=")">
+            #{deviceId}
+        </foreach>
+    </select>
+
+    <!-- 根据deviceId查询我的设备 -->
+    <select id="selectDeviceList" resultType="java.util.Map">
+        select
+        td.*, tp.product_id productId
+        from t_device td
+        left join t_product tp on td.product_id = tp.id
+    </select>
+
+    <!-- 根据ID查询我的设备实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select *
+        from t_device
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 带参数查询我的设备列表 -->
+    <select id="selectPageList" resultType="java.util.Map">
+        select s1.*, s2.name productName from t_device s1, t_product s2 where s1.product_id = s2.id
+        <if test="name !=null and name!=''">
+            and s1.name like concat('%',#{name},'%')
+        </if>
+        <if test="deviceId !=null and deviceId!=''">
+            and s1.device_id like concat('%',#{deviceId},'%')
+        </if>
+        <if test="productId !=null and productId!=''">
+            and s1.product_id = #{productId}
+        </if>
+    </select>
+
+    <!--检查唯一性-->
+    <select id="checkAvailable" resultType="java.util.Map" parameterType="map">
+    <if test='name == "name"'>
+        select * from t_device where name=#{value}
+    </if>
+    <if test='name == "deviceId"'>
+        select * from t_device where device_id=#{value}
+    </if>
+    <if test='name == "deviceCode"'>
+        select * from t_device where device_code=#{value}
+    </if>
+    </select>
+
+    <!--根据产品ID 查我的设备 -->
+    <select id="selectByProductId" parameterType="int" resultType="Map">
+       select id,name,state from t_device where product_id = #{id}
+    </select>
+
+    <!--查询设备名-->
+    <select id="srcDeviceName" resultType="map">
+        SELECT id,device_id,name FROM t_device
+    </select>
+
+    <!-- 删除我的设备 -->
+    <delete id="deleteDeviceById" parameterType="java.lang.Integer">
+        delete from t_device where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除我的设备 -->
+    <delete id="deleteDeviceByIds" parameterType="java.lang.Integer">
+        delete from t_device where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--设备的启动和停止-->
+    <update id="updateDeviceState" parameterType="java.lang.String">
+        update t_device set state = #{state} where id = #{id}
+    </update>
+
+    <!-- 选择所有的设备类型 -->
+    <select id="selectByDevType" resultType="java.util.Map" >
+        select id, name from t_device_type
+    </select>
+
+</mapper>
+

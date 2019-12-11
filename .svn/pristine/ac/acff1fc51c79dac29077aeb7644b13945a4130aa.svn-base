@@ -1,0 +1,294 @@
+package com.krt.cloud.controller;
+
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.krt.common.annotation.KrtLog;
+import com.krt.common.base.BaseController;
+import com.krt.common.bean.DataTable;
+import com.krt.common.bean.ReturnBean;
+import com.krt.common.util.AesUtils;
+import com.krt.cloud.entity.Device;
+import com.krt.cloud.service.DeviceService;
+import com.krt.cloud.service.ProductService;
+import com.krt.ir.service.IBrandService;
+import com.krt.ir.service.IRemoteIndexService;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import static com.krt.common.constant.SysConstant.PASS_KEY;
+
+/**
+ * @author LiXiang
+ * @version 1.0
+ * @Description: 我的设备控制层
+ * @date 2019-04-09 17:27:23
+ */
+@Controller
+public class DeviceController extends BaseController {
+
+    @Autowired
+    private DeviceService deviceService;
+
+    @Autowired
+    private ProductService productService;
+
+    @Resource
+    private IBrandService brandService;
+
+    @Resource
+    private IRemoteIndexService remoteIndexService;
+
+    /**
+     * 我的设备管理页
+     * @return
+     */
+    @RequiresPermissions("device:device:list")
+    @GetMapping("device/device/list")
+    public String list() {
+        //用于搜索产品id
+        List<Map> list = productService.selectNameAndId();
+        request.setAttribute("products",list);
+
+        return "device/device/list";
+    }
+
+    /**
+     * 我的设备管理
+     * @param para 搜索参数
+     * @return
+     */
+    @RequiresPermissions("device:device:list")
+    @PostMapping("device/device/list")
+    @ResponseBody
+    public DataTable list(@RequestParam Map para) {
+        IPage page = deviceService.selectPageList(para);
+        return DataTable.ok(page);
+    }
+
+    /**
+     * 添加我的设备页
+     * @return
+     */
+    @RequiresPermissions("device:device:insert")
+    @GetMapping("device/device/insert")
+    public String insert() {
+        // 用于搜索产品id
+        List<Map> list = productService.selectNameAndId();
+        // 用于选择设备类型
+        List typeList = deviceService.selectByDevType();
+
+        request.setAttribute("products", list);
+        request.setAttribute("deviceTypes", typeList);
+
+        return "device/device/insert";
+    }
+
+    /**
+     * 添加我的设备
+     * @param device 我的设备
+     * @return
+     */
+    @KrtLog( "添加我的设备")
+    @RequiresPermissions("device:device:insert")
+    @PostMapping("device/device/insert")
+    @ResponseBody
+    public ReturnBean insert(Device device) {
+        deviceService.insert(device);
+        return ReturnBean.ok();
+    }
+
+    /**
+     * 生成设备秘钥
+     * @param id 设备id
+     * @return
+     */
+    @KrtLog( "根据设备id自动生成秘钥")
+    @RequiresPermissions("device:device:insert")
+    @PostMapping("device/device/getKey")
+    @ResponseBody
+    public String getKey(String id) {
+        // 密码AES加密
+        String key="";
+        try {
+            key= AesUtils.getAESEncrypt(id, PASS_KEY);
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return key;
+    }
+
+    /**
+     * 检查是否无重复
+     * @param name
+     * @param value
+     * @return
+     */
+    @KrtLog( "检查是否无重复")
+    @RequiresPermissions("device:device:insert")
+    @PostMapping("device/device/checkAvailable")
+    @ResponseBody
+    public String checkAvailable(String name,String value) {
+        int result=deviceService.checkAvailable(name,value);
+        if(result==1){
+            //无重复
+            return "1";
+        }else if(result==0){
+            return "0";
+        }else{
+            return null;
+        }
+    }
+
+    /**
+     * 查看我的设备页
+     * @param id 我的设备 id
+     * @return
+     */
+    @RequiresPermissions("device:device:see")
+    @GetMapping("device/device/see")
+    public String see(Integer id) {
+        // 用于搜索产品id
+        List<Map> list = productService.selectNameAndId();
+        // 用于选择设备类型
+        List typeList = deviceService.selectByDevType();
+
+        request.setAttribute("products", list);
+        request.setAttribute("deviceTypes", typeList);
+
+        Device device = deviceService.selectEntityById(id);
+        request.setAttribute("device", device);
+        return "device/device/see";
+    }
+
+    /**
+     * 修改我的设备页
+     * @param id 我的设备 id
+     * @return
+     */
+    @RequiresPermissions("device:device:update")
+    @GetMapping("device/device/update")
+    public String update(Integer id) {
+        Device device = deviceService.selectEntityById(id);
+        List<Map> products = productService.selectNameAndId();
+        // 用于选择设备类型
+        List typeList = deviceService.selectByDevType();
+
+        request.setAttribute("deviceTypes", typeList);
+        request.setAttribute("device", device);
+        request.setAttribute("products", products);
+        return "device/device/update";
+    }
+
+    /**
+     * 修改我的设备
+     * @param device 我的设备
+     * @return
+     */
+    @KrtLog( "修改我的设备")
+    @RequiresPermissions("device:device:update")
+    @PostMapping("device/device/update")
+    @ResponseBody
+    public ReturnBean update(Device device) {
+        deviceService.updateById(device);
+        return ReturnBean.ok();
+    }
+
+    /**
+     * 设备的启动或停止
+     * @param state 设备状态
+     * @param id 设备id
+     * @return
+     */
+    @KrtLog( "修改设备状态")
+    @RequiresPermissions("device:device:state")
+    @PostMapping("device/device/state")
+    @ResponseBody
+    public ReturnBean updateDeviceState(String state, String id) {
+        deviceService.updateDeviceState(state, id);
+        return ReturnBean.ok();
+    }
+
+    /**
+     * 删除我的设备
+     * @param id 我的设备 id
+     * @return
+     */
+    @KrtLog( "删除我的设备")
+    @RequiresPermissions("device:device:delete")
+    @PostMapping("device/device/delete")
+    @ResponseBody
+    public ReturnBean delete(Integer id) {
+        deviceService.deleteDeviceById(id);
+        return ReturnBean.ok();
+    }
+
+    /**
+     * 批量删除我的设备
+     * @param ids 我的设备 ids
+     * @return
+     */
+    @KrtLog( "批量删除我的设备")
+    @RequiresPermissions("device:device:delete")
+    @PostMapping("device/device/deleteByIds")
+    @ResponseBody
+    public ReturnBean deleteByIds(String ids) {
+        deviceService.deleteDeviceByIds(ids);
+        return ReturnBean.ok();
+    }
+
+    /**
+     * 添加设备类型对应品牌
+     * @return
+     */
+    @KrtLog( "添加设备类型对应品牌")
+    @GetMapping("device/device/insertBrand")
+    public String insertBrand() {
+        return "device/device/brand";
+    }
+
+    /**
+     * 品牌表
+     */
+    @PostMapping("device/device/insertBrand")
+    @ResponseBody
+    public DataTable insertBrand(@RequestParam Map para) {
+        para.put("categoryid", 1);
+        IPage page = brandService.selectPageList(para);
+        return DataTable.ok(page);
+    }
+
+    /**
+     * 添加设备码库
+     * @return
+     */
+    @KrtLog( "添加设备码库")
+    @GetMapping("device/device/insertCodeBank")
+    public String insertCodeBand(String brandName) {
+        request.setAttribute("brandName", brandName);
+        return "device/device/codeBank";
+    }
+
+    /**
+     * 码库表
+     */
+    @PostMapping("device/device/insertCodeBank")
+    @ResponseBody
+    public DataTable insertCodeBand(@RequestParam Map para) {
+        IPage page = deviceService.selectCodeBank(para);
+        return DataTable.ok(page);
+    }
+
+}

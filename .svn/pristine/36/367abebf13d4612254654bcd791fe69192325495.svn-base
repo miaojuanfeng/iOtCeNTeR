@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.cloud.mapper.DeviceCmdMapper">
+
+    <resultMap id="BaseResultMap" type="com.krt.cloud.entity.DeviceCmd">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="device_id" jdbcType="INTEGER" property="deviceId"/>
+        <result column="topic_name" jdbcType="VARCHAR" property="topicName"/>
+        <result column="topic_content" jdbcType="VARCHAR" property="topicContent"/>
+        <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id,device_id,topic_name,topic_content,insert_time,status
+    </sql>
+
+    <!-- 添加云回复命令 -->
+    <insert id="insert" parameterType="com.krt.cloud.entity.DeviceCmd" useGeneratedKeys="true" keyProperty="id">
+        insert into t_device_cmd
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null"> id,</if>
+            <if test="deviceId != null"> device_id,</if>
+            <if test="topicName != null"> topic_name,</if>
+            <if test="topicContent != null"> topic_content,</if>
+            <if test="insertTime != null"> insert_time,</if>
+            <if test="status != null"> status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null"> #{id,jdbcType=INTEGER},</if>
+            <if test="deviceId != null"> #{deviceId,jdbcType=INTEGER},</if>
+            <if test="topicName != null"> #{topicName,jdbcType=VARCHAR},</if>
+            <if test="topicContent != null"> #{topicContent,jdbcType=VARCHAR},</if>
+            <if test="insertTime != null"> #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="status != null"> #{status,jdbcType=INTEGER},</if>
+        </trim>
+    </insert>
+
+    <!-- 批量云回复命令 -->
+    <insert id="insertBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into t_device_cmd
+        (id,device_id,topic_name,topic_content,insert_time,status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.deviceId},#{item.topicName},#{item.topicContent},#{item.insertTime},#{item.status})
+        </foreach>
+    </insert>
+
+    <!-- 删除云回复命令 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from t_device_cmd where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除云回复命令 -->
+    <delete id="deleteByIds" parameterType="java.lang.Integer">
+        delete from t_device_cmd where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+        #{id}
+        </foreach>
+    </delete>
+
+    <!-- 修改云回复命令 -->
+    <update id="update" parameterType="com.krt.cloud.entity.DeviceCmd">
+        update t_device_cmd
+        <set>
+            <if test="id != null"> id = #{id,jdbcType=INTEGER},</if>
+            <if test="deviceId != null"> device_id = #{deviceId,jdbcType=INTEGER},</if>
+            <if test="topicName != null"> topic_name = #{topicName,jdbcType=VARCHAR},</if>
+            <if test="topicContent != null"> topic_content = #{topicContent,jdbcType=VARCHAR},</if>
+            <if test="insertTime != null"> insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="status != null"> status = #{status,jdbcType=INTEGER},</if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 根据ID查询云回复命令 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_cmd
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据ID查询云回复命令实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_cmd
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询云回复命令列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_cmd
+    </select>
+
+    <!-- 带参数查询云回复命令列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select
+        s1.*,s2.`name` productName,s3.`name` deviceName
+        from t_device_cmd s1,t_product s2,t_device s3 where 1=1 and s1.device_id=s3.device_id and s2.id=s3.product_id
+
+        <if test="productName !=null and productName!=''">
+            and s2.name like concat('%',#{productName},'%')
+        </if>
+        <if test="deviceName !=null and deviceName!=''">
+            and s3.name like concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceId !=null and deviceId!=''">
+            and s1.device_id like concat('%',#{deviceId},'%')
+        </if>
+        <if test="beginTime !=null and beginTime!=''">
+            AND s1.insert_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime !=null and endTime!=''">
+            AND s1.insert_time &lt;= #{endTime}
+        </if>
+        <if test="spaceTime !=null and spaceTime!=''">
+            and date_format(s1.insert_time,'%i')%#{spaceTime}=0
+        </if>
+        ORDER BY s1.insert_time desc
+    </select>
+
+    <!-- 带参数查询云回复命令列表 分页 -->
+    <select id="selectPageList" resultType="java.util.Map">
+        select s1.device_id, s1.topic_name, s1.topic_content, s1.insert_time, s1.status, s3.name deviceName
+        from t_device_cmd s1,t_device s3
+        where s1.device_id=s3.device_id
+        <if test="deviceName !=null and deviceName!=''">
+            and s3.name like concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceId !=null and deviceId!=''">
+            and s1.device_id like concat('%',#{deviceId},'%')
+        </if>
+        <if test="beginTime !=null and beginTime!=''">
+            AND s1.insert_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime !=null and endTime!=''">
+            AND s1.insert_time &lt;= #{endTime}
+        </if>
+    </select>
+
+</mapper>
+

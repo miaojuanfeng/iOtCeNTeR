@@ -1,0 +1,128 @@
+package com.krt.mqtt.client.beans;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.mqtt.MqttQoS;
+
+public class MqttSendMessage {
+
+    private int messageId;
+
+    private String topicName;
+
+    private byte[] payload;
+
+    private int state;
+
+    private MqttQoS mqttQoS;
+
+    private Channel ctx;
+
+    private long sendTime;
+
+    private int resendCount;
+
+    private int ver;
+
+    private boolean multiport;
+
+    private boolean ssl;
+
+//    private Long deviceId;
+
+    public int getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(int messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTopicName() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
+
+    public byte[] getPayload() {
+        return payload;
+    }
+
+    public void setPayload(byte[] payload) {
+        this.payload = payload;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public MqttQoS getMqttQoS() {
+        return mqttQoS;
+    }
+
+    public void setMqttQoS(MqttQoS mqttQoS) {
+        this.mqttQoS = mqttQoS;
+    }
+
+    public Channel getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(Channel ctx) {
+        this.ctx = ctx;
+    }
+
+    public long getSendTime() {
+        return sendTime;
+    }
+
+    public void setSendTime(long sendTime) {
+        this.sendTime = sendTime;
+    }
+
+    public int getResendCount() {
+        return resendCount;
+    }
+
+    public void setResendCount(int resendCount) {
+        this.resendCount = resendCount;
+    }
+
+    public int getVer() {
+        return ver;
+    }
+
+    public void setVer(int ver) {
+        this.ver = ver;
+    }
+
+    public boolean isMultiport() {
+        return multiport;
+    }
+
+    public void setMultiport(boolean multiport) {
+        this.multiport = multiport;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
+    }
+
+//    public Long getDeviceId() {
+//        return deviceId;
+//    }
+//
+//    public void setDeviceId(Long deviceId) {
+//        this.deviceId = deviceId;
+//    }
+}

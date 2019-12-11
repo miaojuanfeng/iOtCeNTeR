@@ -1,0 +1,43 @@
+package com.krt.theme.entity;
+
+import com.krt.common.base.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+/**
+ * 主题表实体类
+ *
+ * @author 刘威
+ * @version 1.0
+ * @date 2019年10月14日
+ */
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+@TableName("t_theme")
+public class Theme extends BaseEntity {
+
+    /**
+     * 主题
+     */
+    private String theme;
+
+    /**
+     * 设备
+     */
+    private Integer deviceId;
+
+    /**
+     * 设备描述
+     */
+    private String deviceDescription;
+
+    /**
+     * 状态
+     */
+    private Integer state;
+
+}

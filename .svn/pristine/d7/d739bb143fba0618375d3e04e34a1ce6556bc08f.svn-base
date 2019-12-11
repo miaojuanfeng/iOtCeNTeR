@@ -1,0 +1,5 @@
+com\krt\activemq\config\ActiveMqConfig.class
+com\krt\activemq\config\ActiveMqTopicConfig.class
+com\krt\activemq\producer\ActiveMqProducer.class
+com\krt\activemq\config\ActiveMqQueueConfig.class
+com\krt\activemq\consumer\ActiveMqConsumer.class

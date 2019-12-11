@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.access.mapper.TCallbackLogMapper">
+
+    <sql id="Base_Column_List">
+        id,callback_id,status,inserter,insert_time,update,update_time
+    </sql>
+
+    <!-- 带参数查询回调列表日志列表 -->
+    <select id="selectPageList" resultType="map">
+        select a.name, l.url, c.type, l.id, l.data, l.status, l.insert_time from t_callback_log l
+        left join t_callback c on l.callback_id = c.id
+        left join t_app a on c.app_id = a.id
+        where 1=1
+        <if test="callbackId !=null and callbackId!=''">
+                    and callback_id = #{callbackId}
+        </if>
+        <if test="status !=null and status!=''">
+                    and status = #{status}
+        </if>
+    </select>
+
+    <!-- 插入一条日志 -->
+    <insert id="insertByMap" parameterType="map" >
+        INSERT INTO t_callback_log(callback_id, status, insert_time)
+        VALUES (#{id}, #{status}, #{insertTime})
+    </insert>
+
+</mapper>
+

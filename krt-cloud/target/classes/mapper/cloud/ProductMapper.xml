@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.cloud.mapper.ProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.krt.cloud.entity.Product">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="product_id" jdbcType="VARCHAR" property="productId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="detail" jdbcType="VARCHAR" property="detail"/>
+        <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id,product_id,name,detail,`ssl`,inserter,insert_time,updater,update_time
+    </sql>
+
+    <!-- 删除产品表 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from t_product where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除产品表 -->
+    <delete id="deleteBatchByIds" parameterType="java.lang.Integer">
+        delete from t_product where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据ID查询产品表 -->
+    <select id="selectOneById" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_product
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据ID查询产品表实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_product
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询产品表列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_product
+    </select>
+
+    <!-- 带参数查询产品表列表 -->
+    <select id="selectPageList" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_product where 1=1
+        <if test="id !=null and id!=''">
+            and product_id = #{id}
+        </if>
+        <if test="name !=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+    </select>
+
+    <!--查询该产品下的设备的状态数量-->
+    <select id="SelectDeviceNum" resultType="Map" parameterType="int">
+        select state,count(state) as number from t_device where product_id = #{id}
+		group by state order by state
+    </select>
+
+    <!--插入产品时，判断产品名称是否存在-->
+    <select id="checkProductName" resultType="java.lang.String" parameterType="java.lang.String">
+        select product_id from t_product where name = #{name}
+    </select>
+
+    <!--更新product表字段-->
+    <update id="updateProduct" parameterType="com.krt.cloud.entity.Product">
+        update t_product
+        <set>
+            <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>
+            <if test="detail != null">detail = #{detail,jdbcType=VARCHAR},</if>
+        </set>
+        update_time = now()
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 删除产品表 -->
+    <delete id="deleteByID" parameterType="java.lang.Integer">
+        delete from t_product where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 设备管理需要 查询产品名称和id-->
+    <select id="selectNameAndId" resultType="java.util.Map">
+        select * from t_product
+    </select>
+
+    <select id="selectByProductId" resultMap="BaseResultMap">
+        select * from t_product where product_id = #{productId}
+    </select>
+
+</mapper>
+

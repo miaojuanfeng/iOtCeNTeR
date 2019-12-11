@@ -1,0 +1,278 @@
+package com.krt.mqtt.client.netty;
+
+import com.alibaba.fastjson.JSONObject;
+import com.krt.access.thread.CallbackThread;
+import com.krt.cloud.service.DeviceService;
+import com.krt.mqtt.client.beans.MqttSendMessage;
+import com.krt.mqtt.client.constant.TopicContentConst;
+import com.krt.mqtt.client.constant.TopicNameConst;
+import com.krt.mqtt.client.constant.CommonConst;
+import com.krt.mqtt.client.constant.MqttMessageStateConst;
+import com.krt.mqtt.client.thread.NettyBeatThread;
+import com.krt.mqtt.client.utils.MessageIdUtil;
+import com.krt.mqtt.client.utils.MqttUtil;
+import com.krt.theme.mapper.ThemeMapper;
+import com.krt.theme.service.IThemeService;
+import com.krt.theme.service.impl.ThemeServiceImpl;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.mqtt.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+
+@Slf4j
+@Component
+@ChannelHandler.Sharable
+public class NettyClientHandler extends SimpleChannelInboundHandler<MqttMessage> {
+
+//    private static int CALLBACK_TYPE_DATA = 1;
+//    private static int CALLBACK_TYPE_STATE = 2;
+//    private static int CALLBACK_TYPE_STOP = 3;
+//    private static int CALLBACK_TYPE_CMD = 4;
+
+    @Autowired
+    private IThemeService themeService;
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, MqttMessage mqttMessage) throws Exception {
+//        try {
+//            //解析物联网设备发来的数据
+//            JSONObject json = JSONObject.parseObject(msg);
+//            String CMD = json.getString("CMD");
+//            if( "1".equals(CMD) ){
+//                NettyBeatThread.isConnect = true;
+//                new NettyBeatThread();
+//            }
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        switch (mqttMessage.fixedHeader().messageType()){
+            case CONNACK:
+                /**
+                 * 订阅消息
+                 */
+                List<Map> themes = themeService.selectDeviceTheme();
+                List<Long> exclude = new ArrayList<>();
+                exclude.add(CommonConst.DEVICE_ID);
+                List<MqttTopicSubscription> subscriptions = new ArrayList<>();
+                subscriptions.add(new MqttTopicSubscription("/sys/productId/deviceId/thing/"+TopicNameConst.STATE_LINE, MqttQoS.AT_LEAST_ONCE));
+                subscriptions.add(new MqttTopicSubscription("/sys/productId/deviceId/thing/"+TopicNameConst.STATE_STOP, MqttQoS.AT_LEAST_ONCE));
+                for(Map theme : themes){
+//                    Long productId = (Long)device.get("productId");
+                    String deviceId = String.valueOf(theme.get("deviceId"));
+                    if( !exclude.contains(deviceId) ) {
+                        String t = (String)theme.get("theme");
+                        String topic = t.replace("{deviceId}", deviceId);
+                        subscriptions.add(new MqttTopicSubscription(topic, MqttQoS.AT_LEAST_ONCE));
+                    }
+                }
+                MqttSubscribePayload mqttSubscribePayload = new MqttSubscribePayload(subscriptions);
+                MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.SUBSCRIBE,false, MqttQoS.AT_LEAST_ONCE,false,0);
+                MqttMessageIdVariableHeader mqttMessageIdVariableHeader =MqttMessageIdVariableHeader.from(MessageIdUtil.messageId());
+                MqttSubscribeMessage mqttSubscribeMessage = new MqttSubscribeMessage(mqttFixedHeader,mqttMessageIdVariableHeader,mqttSubscribePayload);
+                ctx.writeAndFlush(mqttSubscribeMessage);
+
+                break;
+            case PUBLISH:
+                log.info("收到MQTT服务器发来消息："+mqttMessage);
+
+                MqttPublishMessage mqttPublishMessage = (MqttPublishMessage) mqttMessage;
+                String topicName = mqttPublishMessage.variableHeader().topicName();
+                byte[] topicMessage = MqttUtil.readBytes(mqttPublishMessage.payload());
+                String topicContent = MqttUtil.byteToString(topicMessage);
+
+                log.info("消息内容："+topicContent);
+
+//                JSONObject temp = JSONObject.parseObject(topicContent);
+//                Integer ver = temp.getInteger(TopicContentConst.ACK_VER);
+                /**
+                 * 设备回复命令
+                 */
+//                if( topicName.endsWith(TopicNameConst.CMD_ACK) ){
+//                    String[] segName = topicName.split("/");
+//                    Long deviceId = Long.valueOf(segName[3]);
+//                    //
+////                    String back = temp.getString(TopicContentConst.ACK_BACK);
+////                    if( TopicContentConst.ACK_BACK_OK.equals(back) ){
+////                        MqttSendMessage mqttSendMessage = CommonConst.verMessages.get(deviceId);
+////                        if (mqttSendMessage != null && ver >= mqttSendMessage.getVer()) {
+////                            CommonConst.verMessages.remove(deviceId);
+////                        } else {
+////                            log.info("未完成发布命令（" + deviceId + "/" + ver + "）不存在");
+////                        }
+////                    }else{
+////                        log.info("设备回复命令状态错误："+TopicContentConst.ACK_BACK+":"+back);
+////                    }
+//                    Map data = new HashMap();
+//                    data.put("deviceId", deviceId);
+//                    data.put("data", topicContent);
+//                    CallbackThread.add(1, CALLBACK_TYPE_CMD, data);
+//                /**
+//                 * 设备上报数据
+//                 */
+//                }else if( topicName.endsWith(TopicNameConst.DATA_POST) ){
+//                    String[] segName = topicName.split("/");
+//                    String productId = segName[2];
+//                    String deviceId = segName[3];
+//                    // 版本号大于才做
+////                    if( ver == 0 || null == CommonConst.verManage.get(deviceId) || ver > CommonConst.verManage.get(deviceId) ) {
+////                        Map data = new HashMap();
+////                        data.put("productId", productId);
+////                        data.put("deviceId", deviceId);
+////                        data.put("data", topicContent);
+////                        CallbackThread.add(1, data);
+////                        /**
+////                         * 回复收到数据
+////                         */
+////                        JSONObject cmdContent = new JSONObject();
+////                        cmdContent.put(TopicContentConst.ACK_BACK, TopicContentConst.ACK_BACK_OK);
+////                        cmdContent.put(TopicContentConst.ACK_VER, ver);
+////                        NettyClient.sendAck(MessageIdUtil.messageId(), topicName.replace(TopicNameConst.DATA_POST, TopicNameConst.DATA_ACK), cmdContent.toString().getBytes());
+////                        /**
+////                         * 更新设备版本号
+////                         */
+////                        CommonConst.verManage.put(Long.valueOf(deviceId), ver);
+////                    }
+//                    Map data = new HashMap();
+//                    data.put("productId", productId);
+//                    data.put("deviceId", deviceId);
+//                    data.put("data", topicContent);
+//                    CallbackThread.add(1, CALLBACK_TYPE_DATA, data);
+//                /**
+//                 * 设备上下线
+//                 */
+//                }else if( topicName.endsWith(TopicNameConst.STATE_LINE) ){
+//                    JSONObject t = JSONObject.parseObject(topicContent);
+//                    String deviceId = String.valueOf(t.getLong("deviceId"));
+//                    String state = String.valueOf(t.getInteger("state"));
+//
+//                    Map data = new HashMap();
+//                    data.put("deviceId", deviceId);
+//                    data.put("state", state);
+//                    CallbackThread.add(1, CALLBACK_TYPE_STATE, data);
+                /**
+                 * 服务器终止
+                 */
+                if( topicName.endsWith(TopicNameConst.STATE_STOP) ){
+                    Map data = new HashMap();
+                    data.put("topicName", topicName);
+                    data.put("topicContent", topicContent);
+                    CallbackThread.add(1, data);
+                }else{
+                    Map data = new HashMap();
+                    data.put("topicName", topicName);
+                    data.put("topicContent", topicContent);
+                    CallbackThread.add(1, data);
+                }
+
+                switch (mqttMessage.fixedHeader().qosLevel()) {
+                    case AT_LEAST_ONCE:
+                        int messageId = mqttPublishMessage.variableHeader().messageId();
+                        PUBACK(ctx, messageId);
+                        break;
+                }
+
+                break;
+            case PUBACK:
+                replyPUBACK(ctx, (MqttPubAckMessage)mqttMessage);
+                break;
+        }
+    }
+
+    public void PUBACK(ChannelHandlerContext ctx, int messageId){
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.PUBACK,false, MqttQoS.AT_MOST_ONCE,false,0x02);
+        MqttMessageIdVariableHeader from = MqttMessageIdVariableHeader.from(messageId);
+        ctx.writeAndFlush(new MqttPubAckMessage(mqttFixedHeader, from));
+    }
+
+    public void replyPUBACK(ChannelHandlerContext ctx, MqttPubAckMessage mqttPubAckMessage){
+        int messageId = mqttPubAckMessage.variableHeader().messageId();
+        MqttSendMessage mqttSendMessage = CommonConst.sendMessages.get(messageId);
+        if( mqttSendMessage != null ){
+            if( mqttSendMessage.getMqttQoS() == MqttQoS.AT_LEAST_ONCE && mqttSendMessage.getState() == MqttMessageStateConst.PUB ){
+                CommonConst.sendMessages.remove(messageId);
+//                saveVerMessage(mqttSendMessage.getDeviceId(), mqttSendMessage);
+                mqttSendMessage.setSendTime(new Date().getTime());
+                mqttSendMessage.setResendCount(1);
+//                CommonConst.verMessages.put(mqttSendMessage.getDeviceId(), mqttSendMessage);
+            }else{
+                log.error("未完成发布报文（"+messageId+"）状态错误（"+mqttSendMessage.getMqttQoS()+", "+mqttSendMessage.getState()+"）");
+            }
+        }else{
+            log.error("未完成发布报文（"+messageId+"）不存在");
+        }
+    }
+
+//    private void saveVerMessage(Long deviceId, MqttSendMessage mqttSendMessage){
+//        MqttSendMessage message = CommonConst.verMessages.get(deviceId);
+//        if( message != null ){
+//            if( mqttSendMessage.isMultiport() ){
+//                if( mqttSendMessage.getVer() == 0 || mqttSendMessage.getVer() > message.getVer() ) {
+//                    String oldContent = MqttUtil.byteToString(message.getPayload());
+//                    JSONObject oldData = JSONObject.parseObject(oldContent);
+//                    JSONArray oldCtrl = oldData.getJSONArray("CTRL");
+//                    JSONArray oldTime = oldData.getJSONArray("TIME");
+//
+//                    String newContent = MqttUtil.byteToString(mqttSendMessage.getPayload());
+//                    JSONObject newData = JSONObject.parseObject(newContent);
+//                    JSONArray newCtrl = newData.getJSONArray("CTRL");
+//                    JSONArray newTime = newData.getJSONArray("TIME");
+//                    for (int i=0;i<newCtrl.size();i++){
+//                        if( newCtrl.getInteger(i) != -1 ){
+//                            oldCtrl.set(i, newCtrl.getInteger(i));
+//                            oldTime.set(i, newTime.getInteger(i));
+//                        }
+//                    }
+//
+//                    JSONObject payload = new JSONObject(true);
+//                    payload.put("CMD", newData.get("CMD"));
+//                    payload.put("CTRL", oldCtrl);
+//                    payload.put("TIME", oldTime);
+//                    payload.put("VER", newData.get("VER"));
+//                    mqttSendMessage.setPayload(payload.toString().getBytes());
+//                    mqttSendMessage.setSendTime(new Date().getTime());
+//                    mqttSendMessage.setResendCount(1);
+//                    CommonConst.verMessages.put(deviceId, mqttSendMessage);
+//                }
+//            }else{
+//                if( mqttSendMessage.getVer() == 0 || mqttSendMessage.getVer() > message.getVer() ) {
+//                    mqttSendMessage.setSendTime(new Date().getTime());
+//                    mqttSendMessage.setResendCount(1);
+//                    CommonConst.verMessages.put(deviceId, mqttSendMessage);
+//                }
+//            }
+//        }else{
+//            mqttSendMessage.setSendTime(new Date().getTime());
+//            mqttSendMessage.setResendCount(1);
+//            CommonConst.verMessages.put(deviceId, mqttSendMessage);
+//        }
+//    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT,false, MqttQoS.AT_LEAST_ONCE,false,0);
+        MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(MqttVersion.MQTT_3_1_1.protocolName(), MqttVersion.MQTT_3_1_1.protocolLevel(),true,true,false,0,false,false, CommonConst.ALIVE_TIME);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(String.valueOf(CommonConst.DEVICE_ID),"", "", String.valueOf(CommonConst.DEVICE_ID), CommonConst.VERIFY_CODE);
+        MqttConnectMessage mqttConnectMessage = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
+        ctx.writeAndFlush(mqttConnectMessage);
+        super.channelActive(ctx);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        NettyBeatThread.isConnect = false;
+        NettyBeatThread.awake();
+        super.channelInactive(ctx);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        NettyBeatThread.isConnect = false;
+        NettyBeatThread.awake();
+        super.exceptionCaught(ctx, cause);
+    }
+}

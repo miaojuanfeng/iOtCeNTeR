@@ -1,0 +1,156 @@
+<#include "/common/layoutForm.ftl">
+<@header></@header>
+<@body >
+    <div class="wrapper">
+        <section class="content">
+            <div class="row">
+                <div class="col-md-12">
+                    <form role="form" class="form-horizontal krt-form" id="krtForm">
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="pname" class="control-label col-sm-4">
+                                            主题前缀：
+                                        </label>
+                                        <div class="col-sm-8">
+                                            <input class="form-control" id="themeFirstPart" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="pname" class="control-label col-sm-4">
+                                            主题后缀:
+                                        </label>
+                                        <div class="col-sm-8">
+                                            <input class="form-control" id="themeSecondPart">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="pname" class="control-label col-sm-4">
+                                            设备：
+                                        </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control select2" style="width: 100%" id="deviceId" name="deviceId"
+                                                    onchange="setTheme(this)">
+                                                <option value="">==请选择设备==</option>
+                                                <#list deviceList as device>
+                                                    <option value="${device.id!}" min="${device.deviceId!}" max="${device.productId!}" <#if
+                                                    "${device.id!}"=="${theme.deviceId!}">selected</#if> >${device
+                                                        .name!}-${device
+                                                        .deviceId!}</option>
+                                                </#list>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="pname" class="control-label col-sm-4">
+                                            状态：
+                                        </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control select2" style="width: 100%" id="state" name="state">
+                                                <option value="1" <#if "${theme.state!}"=="1">selected</#if>>启用</option>
+                                                <option value="0" <#if "${theme.state!}"=="0">selected</#if>>禁用</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 隐藏域 -->
+                            <input type="hidden" name="id" id="id" value="${theme.id!}">
+                            <input type="hidden" name="theme" id="theme" value="${theme.theme!}">
+                            <input type="hidden" name="deviceDescription" id="deviceDescription" value="${theme.deviceDescription!}">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</@body>
+<@footer>
+    <script type="text/javascript">
+        var code = 500;
+
+        $(document).ready(function () {
+            var theme = $('#theme').val();
+            var deviceId = $('#deviceId').find("option:selected").attr("min");
+            var productId = $('#deviceId').find("option:selected").attr("max");
+            var themeFirstPart = "/sys/" + productId + "/" + deviceId + "/";
+            $('#themeFirstPart').val(themeFirstPart);
+            var themeSecondPart=theme.replace(themeFirstPart,"");
+            $('#themeSecondPart').val(themeSecondPart);
+        });
+
+        function setTheme(a) {
+            var description = $(a).find("option:selected").text();
+            $('#deviceDescription').val(description);
+
+            var deviceId = $(a).find("option:selected").attr("min");
+            var productId = $(a).find("option:selected").attr("max");
+            if (deviceId == undefined || productId == undefined) {
+                $('#themeFirstPart').val("/sys/{productId}/{deviceId}/");
+            } else {
+                $('#themeFirstPart').val("/sys/" + productId + "/" + deviceId + "/");
+            }
+        }
+
+        //主题校验
+        function themeCheck(theme) {
+            var id = $('#id').val();
+            krt.ajax({
+                type: "get",
+                url: "${basePath}/theme/theme/check",
+                data: {"theme": theme, "id": id},
+                async: false,
+                success: function (rb) {
+                    if (rb.code === 200) {
+                        code = 200;
+                    } else {
+                        code = 500;
+                    }
+                }
+            });
+        }
+
+        //提交
+        function doSubmit() {
+            if ($('#deviceId').val() == "") {
+                krt.layer.msg("请选择设备");
+                return false;
+            }
+
+            var theme = $('#themeFirstPart').val() + $('#themeSecondPart').val();
+            themeCheck(theme);
+            if (code == 200) {
+                $('#theme').val(theme);
+            } else {
+                krt.layer.msg("主题已存在");
+                return false;
+            }
+
+            krt.ajax({
+                type: "POST",
+                url: "${basePath}/theme/theme/update",
+                data: $('#krtForm').serialize(),
+                success: function (rb) {
+                    krt.layer.msg(rb.msg);
+                    if (rb.code === 200) {
+                        var index = krt.layer.getFrameIndex(); //获取窗口索引
+                        krt.table.reloadTable();
+                        krt.layer.close(index);
+                    }
+                }
+            });
+        }
+    </script>
+</@footer>
+

@@ -1,0 +1,294 @@
+<#include "/common/layoutForm.ftl">
+<@header></@header>
+<@body>
+<div class="wrapper">
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <form role="form" class="form-horizontal krt-form krt-width-form" id="krtForm">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="name" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关名称
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="name" id="name" class="form-control" placeholder="请输入" required onblur="checkAvailable(this,this.name,this.value)" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>产品名称
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="productId" name="productId" required>
+                                            <#list products as product>
+                                                <option value="${product.id}">${product.name}</option>
+                                            </#list>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="deviceId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关编号
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="deviceId" id="deviceId" class="form-control" placeholder="请输入" required onblur="checkAvailable(this,this.name,this.value)" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="deviceCode" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>SIM卡号
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="deviceCode" name="deviceCode" class="form-control" placeholder="请输入" required onblur="checkAvailable(this,this.name,this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="deviceKey" class="control-label col-sm-2">
+                                        <span class="form-required">*</span>网关密匙
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" id="deviceKey" name="verifyCode" class="form-control" placeholder="自动计算" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="deviceAddress" class="control-label col-sm-2">
+                                        <span class="form-required">*</span>网关地址
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" id="deviceAddress" name="deviceAddress" class="form-control"  placeholder="请输入" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关类型
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="deviceType" name="deviceType" required>
+                                            <#list deviceTypes as type>
+                                                <option value="${type.id}">${type.name}</option>
+                                            </#list>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关状态
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="state" name="state">
+                                            <option value="0">启用</option>
+                                            <option value="1">停用</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <#-- 当选中为空调是显示 -->
+                        <div class="row airConditioner" style="display: none;">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="brandText" class="control-label col-sm-4">
+                                        红外品牌
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="brand" name="brandName" class="form-control" placeholder="请选择">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="codeBankText" class="control-label col-sm-4">
+                                        码库文件
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="file" name="fileName" class="form-control" placeholder="请选择">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+</@body>
+<@footer>
+    <script type="text/javascript">
+        var validateForm;
+
+        //添加时名称和id和网关sim卡号不能重复，去数据库中查找有无该名称或id或sim卡号
+        //检查是否可用，无重复
+        //TODO 尝试用this
+        function checkAvailable(mythis,name,value){
+            if(!value==""){
+                $.ajax({
+                    type : "post",
+                    async : true,
+                    url : "${basePath}/device/device/checkAvailable",
+                    data: {name:name,value:value},// 要提交的表单 id为网关id
+                    dataType : "json",        //返回数据形式为json
+                    success : function(data) {
+                        if(data==0){
+                            top.layer.msg(value+"已经存在，请重新填写");
+                            mythis.value="";
+                        }else if(mythis.name=="deviceId"){
+                            getKey(name,value);
+                        }
+                    },
+                    error : function(errorMsg) {
+                        alert("服务器错误");
+                    }
+                });
+            }
+        }
+
+        //根据网关id获取秘钥
+        function getKey(name,id){
+            checkAvailable(name,id);//先检查是否唯一
+            if(!$.trim($("#deviceId").val()) == $.trim("")){
+                $.ajax({
+                    type : "post",
+                    async : true,
+                    url : "${basePath}/device/device/getKey",
+                    data: {id:id},// 要提交的表单 id为网关id
+                    dataType : "json",        //返回数据形式为json
+                    success : function(data) {
+                        $("#deviceKey").val(data);
+                    },
+                    error : function(errorMsg) {
+                        alert("服务器错误");
+                    }
+                });
+            }else{
+                //网关id清空时，鼠标移除清空网关秘钥
+                $("#deviceKey").val("");
+            }
+        }
+
+        //提交表单
+        function doSubmit() {
+            var info = "";
+            if ($("#deviceType").val() != null ){
+                info = "{\"brandId\":"+$("#brandText").attr("brandId")+",";
+                info += "\"codeBankId\":"+$("#brandText").attr("brandId")+"}";
+            }
+            krt.ajax({
+                type: "POST",
+                url: "${basePath}/device/device/insert",
+                data: $('#krtForm').serialize()+"&info="+info,
+                validateForm: validateForm,
+                success: function (rb) {
+                    krt.layer.msg(rb.msg);
+                    if (rb.code === 200) {
+                        var index = krt.layer.getFrameIndex(); //获取窗口索引
+                        krt.table.reloadTable();
+                        krt.layer.close(index);
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            validateForm = $("#krtForm").validate({
+                ignore: "",
+                errorContainer: "#messageBox",
+                errorPlacement: function (error, element) {
+                    $("#messageBox").text("输入有误，请先更正。");
+                    if (element.is(":checkbox") || element.is(":radio") || element.parent().is(".input-group")) {
+                        error.appendTo(element.parent().parent());
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+            // 选择网关类型
+            $("#deviceType").on("change", function () {
+                var value = $(this).val();
+                if(value == 3){
+                    $(".airConditioner").show();
+                }else{
+                    $("#brand").val("");
+                    $("#file").val("");
+                    $(".airConditioner").hide();
+                }
+            });
+        });
+
+        // 添加品牌
+        $("#brand").click(function () {
+            krt.layer.open({
+                type: 2,
+                area: ['900px', '650px'],
+                title: "选择品牌",
+                maxmin: true, //开启最大化最小化按钮
+                content: "${basePath}/device/device/insertBrand",
+                btn: ['确定', '关闭'],
+                yes: function (index, layero) {
+                    var radio = layero.find("iframe")[0].contentWindow.$('input[type="radio"]:checked')[0];
+                    $("#brand").val(radio.value);
+                    $("#brand").attr("brandId", radio.id);
+                    top.layer.close(index);
+                },
+                cancel: function (index) {
+                    top.layer.close(index);
+                }
+            });
+        });
+
+        // 添加码库
+        $("#file").click(function () {
+            var brandName = $("#brand").val();
+            if( brandName == '' ){
+                top.krt.layer.msg("请先选择品牌");
+                return;
+            }
+            krt.layer.open({
+                type: 2,
+                area: ['900px', '650px'],
+                title: "选择码库",
+                maxmin: true, //开启最大化最小化按钮
+                content: "${basePath}/device/device/insertCodeBank?brandName="+brandName,
+                btn: ['确定', '关闭'],
+                yes: function (index, layero) {
+                    var radio = layero.find("iframe")[0].contentWindow.$('input[type="radio"]:checked')[0];
+                    $("#file").val(radio.value);
+                    $("#file").attr("bankId", radio.id);
+                    top.layer.close(index);
+                },
+                cancel: function (index) {
+                    top.layer.close(index);
+                }
+            });
+        });
+
+    </script>
+</@footer>

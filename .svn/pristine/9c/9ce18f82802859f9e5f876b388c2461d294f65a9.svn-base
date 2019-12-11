@@ -1,0 +1,143 @@
+<#include "/common/layoutList.ftl">
+<@header></@header>
+<@body>
+<div class="wrapper">
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <form role="form" class="form-horizontal krt-form krt-width-form" id="krtForm">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="name" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关名称
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="name" id="name" class="form-control" value="${(device.name)!}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>产品名称
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="productId" name="productId" required readonly>
+                                            <#list products as product>
+                                                <option value="${product.id}" ${(product.id==device.productId)?string('selected','')}>${product.name}</option>
+                                            </#list>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="deviceId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关编号
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" name="deviceId" id="deviceId" class="form-control" value="${(device.deviceId)!}" required readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="deviceCode" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>SIM卡号
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="deviceCode" name="deviceCode" class="form-control" value="${(device.deviceCode)!}" required readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="deviceKey" class="control-label col-sm-2">
+                                        <span class="form-required">*</span>网关密匙
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" id="deviceKey" name="verifyCode" class="form-control" value="${(device.verifyCode)!}" readonly readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="deviceAddress" class="control-label col-sm-2">
+                                        <span class="form-required">*</span>网关地址
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" id="deviceAddress" name="deviceAddress" class="form-control" value="${(device.deviceAddress)!}" required readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关类型
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="deviceType" name="deviceType" required readonly>
+                                            <#list deviceTypes as type>
+                                                <option value="${type.id}" ${(device.deviceType==type.id)?string('selected','')}>${type.name}</option>
+                                            </#list>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="productId" class="control-label col-sm-4">
+                                        <span class="form-required">*</span>网关状态
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" name="state" readonly>
+                                            <option value="0" ${(device.state==0)?string('selected','')}>启用</option>
+                                            <option value="1" ${(device.state==1)?string('selected','')}>停用</option>
+                                            <option value="2" ${(device.state==2)?string('selected','')}>在线</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <#-- 当选中为红外时显示 -->
+                        <div class="row airConditioner" style="${(device.deviceType!=3)?string("display: none;", "")}">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="brandText" class="control-label col-sm-4">
+                                        红外品牌
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="brandText" name="brandText" class="form-control"
+                                               value="${(device.brandName)!}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="codeBankText" class="control-label col-sm-4">
+                                        码库文件
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="codeBankText" name="codeBankText" class="form-control"
+                                               value="${(device.fileName)!}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div><!-- ./wrapper -->
+</@body>

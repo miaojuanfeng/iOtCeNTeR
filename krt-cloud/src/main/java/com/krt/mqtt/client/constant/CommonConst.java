@@ -1,0 +1,35 @@
+package com.krt.mqtt.client.constant;
+
+import com.krt.mqtt.client.beans.MqttSendMessage;
+import com.krt.mqtt.client.thread.NettyBeatThread;
+
+import java.util.concurrent.ConcurrentHashMap;
+
+public class CommonConst {
+
+//    public static final String HOST = "127.0.0.1";
+    public static String HOST = "172.0.52.112";
+
+    public static final int PORT_SSL = 32009;
+//    public static final int PORT = 16008;
+    public static final int PORT = 32012;
+//    public static final int PORT_SSL = 16007;
+
+    public static final Long DEVICE_ID = 8607978356742L;
+
+    public static final String DEVICE_CODE = "07978356792";
+
+    public static final String VERIFY_CODE = "82C00A03698D11FB54B4FC434E13ADCA";
+
+    public static final int ALIVE_TIME = 60;
+
+    public static NettyBeatThread beatThread = null;
+
+    public static final ConcurrentHashMap<Integer, MqttSendMessage> sendMessages = new ConcurrentHashMap<>();
+
+//    public static final ConcurrentHashMap<Long, MqttSendMessage> verMessages = new ConcurrentHashMap<>();
+
+    public static final ConcurrentHashMap<Long, Integer> verManage = new ConcurrentHashMap<>();
+
+    public static final int MAX_RESEND_COUNT = 10;
+}

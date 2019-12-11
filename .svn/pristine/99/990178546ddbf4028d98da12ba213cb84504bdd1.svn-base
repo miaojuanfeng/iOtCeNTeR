@@ -1,0 +1,9 @@
+com\krt\api\controller\v2\ApiV2TestController.class
+com\krt\api\controller\cloud\ApiCallbackTest.class
+com\krt\api\controller\cloud\ApiDeviceController.class
+com\krt\api\controller\cloud\ApiCommandController.class
+com\krt\api\dto\TokenDTO.class
+com\krt\api\controller\ApiAuthController.class
+com\krt\api\controller\v1\ApiV1PushController.class
+com\krt\api\controller\v1\ApiV1TestController.class
+com\krt\api\dto\UserDTO.class

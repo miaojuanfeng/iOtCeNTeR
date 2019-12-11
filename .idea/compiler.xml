@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="krt-api" />
+        <module name="krt-cloud" />
+        <module name="krt-common" />
+        <module name="krt-framework" />
+        <module name="krt-gen" />
+        <module name="krt-monitor" />
+        <module name="krt-plugin-activemq" />
+        <module name="krt-plugin-captcha" />
+        <module name="krt-plugin-ehcache" />
+        <module name="krt-plugin-file" />
+        <module name="krt-plugin-jpush" />
+        <module name="krt-plugin-lucene" />
+        <module name="krt-plugin-mail" />
+        <module name="krt-plugin-oauth2" />
+        <module name="krt-plugin-quartz" />
+        <module name="krt-plugin-redis" />
+        <module name="krt-plugin-websocket" />
+        <module name="krt-sys" />
+        <module name="krt-web" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="IOT_CLOUD" target="1.8" />
+      <module name="krt-api" target="1.8" />
+      <module name="krt-cloud" target="1.8" />
+      <module name="krt-common" target="1.8" />
+      <module name="krt-framework" target="1.8" />
+      <module name="krt-gen" target="1.8" />
+      <module name="krt-monitor" target="1.8" />
+      <module name="krt-plugin-activemq" target="1.8" />
+      <module name="krt-plugin-captcha" target="1.8" />
+      <module name="krt-plugin-ehcache" target="1.8" />
+      <module name="krt-plugin-file" target="1.8" />
+      <module name="krt-plugin-jpush" target="1.8" />
+      <module name="krt-plugin-lucene" target="1.8" />
+      <module name="krt-plugin-mail" target="1.8" />
+      <module name="krt-plugin-oauth2" target="1.8" />
+      <module name="krt-plugin-quartz" target="1.8" />
+      <module name="krt-plugin-redis" target="1.8" />
+      <module name="krt-plugin-websocket" target="1.8" />
+      <module name="krt-plugins" target="1.8" />
+      <module name="krt-sys" target="1.8" />
+      <module name="krt-web" target="1.8" />
+      <module name="mqtt-client" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

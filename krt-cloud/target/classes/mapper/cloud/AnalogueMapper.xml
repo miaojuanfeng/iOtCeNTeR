@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.cloud.mapper.AnalogueMapper">
+
+    <!--插入数据-->
+    <insert id="InsertData" parameterType="java.util.Map">
+        INSERT INTO t1_analogus_device(command, status, time) VALUES (#{command}, #{status}, #{time})
+    </insert>
+
+    <!--查询模拟数据的前10条-->
+    <select id="SelectAnalogue" resultType="java.util.Map" >
+        select * from t1_analogus_device ORDER BY time DESC limit 10
+    </select>
+
+    <!-- 带参数查询产品表列表 -->
+    <select id="selectPageList" resultType="java.util.Map">
+        select * from t1_analogus_device order by id desc
+    </select>
+
+</mapper>
+

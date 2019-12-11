@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>krt</artifactId>
+        <groupId>com.krt</groupId>
+        <version>${krt.version}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>krt-cloud</artifactId>
+    <name>krt-sys</name>
+    <url>http://www.cnkrt.com</url>
+    <description>krt-cloud</description>
+
+    <dependencies>
+        <!-- 公共工具 -->
+        <dependency>
+            <groupId>com.krt</groupId>
+            <artifactId>krt-common</artifactId>
+            <version>${krt.version}</version>
+        </dependency>
+        <!-- 核心框架 -->
+        <dependency>
+            <groupId>com.krt</groupId>
+            <artifactId>krt-framework</artifactId>
+            <version>${krt.version}</version>
+        </dependency>
+        <!-- netty -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.4.Final</version>
+        </dependency>
+
+    </dependencies>
+</project>

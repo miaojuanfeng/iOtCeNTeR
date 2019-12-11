@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krt.cloud.mapper.DeviceDataMapper">
+
+    <resultMap id="BaseResultMap" type="com.krt.cloud.entity.DeviceData">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="device_id" jdbcType="VARCHAR" property="deviceId"/>
+        <result column="data_type" jdbcType="VARCHAR" property="dataType"/>
+        <result column="device_data" jdbcType="VARCHAR" property="deviceData"/>
+        <result column="inserter" jdbcType="INTEGER" property="inserter"/>
+        <result column="insert_time" jdbcType="TIMESTAMP" property="insertTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="is_delete" jdbcType="CHAR" property="isDelete"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+    id,device_id,data_type,device_data,inserter,insert_time,updater,update_time,is_delete
+    </sql>
+
+    <!-- 添加设备数据 -->
+    <insert id="insert" parameterType="com.krt.cloud.entity.DeviceData" useGeneratedKeys="true" keyProperty="id">
+        insert into t_device_data
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="dataType != null">data_type,</if>
+            <if test="deviceData != null">device_data,</if>
+            <if test="inserter != null">inserter,</if>
+            <if test="insertTime != null">insert_time,</if>
+            <if test="updater != null">updater,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="isDelete != null">is_delete,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id,jdbcType=INTEGER},</if>
+            <if test="deviceId != null">#{deviceId,jdbcType=VARCHAR},</if>
+            <if test="dataType != null">#{dataType,jdbcType=VARCHAR},</if>
+            <if test="deviceData != null">#{deviceData,jdbcType=VARCHAR},</if>
+            <if test="inserter != null">#{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">#{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">#{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="isDelete != null">#{isDelete,jdbcType=CHAR},</if>
+        </trim>
+    </insert>
+
+    <!-- 批量设备数据 -->
+    <insert id="insertBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into t_device_data
+        (id,device_id,data_type,device_data,inserter,insert_time,updater,update_time,is_delete)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.deviceId},#{item.dataType},#{item.deviceData},#{item.inserter},#{item.insertTime},#{item.updater},#{item.updateTime},#{item.isDelete})
+        </foreach>
+    </insert>
+
+    <!-- 删除设备数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from t_device_data where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 批量删除设备数据 -->
+    <delete id="deleteByIds" parameterType="java.lang.Integer">
+        delete from t_device_data where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 修改设备数据 -->
+    <update id="update" parameterType="com.krt.cloud.entity.DeviceData">
+        update t_device_data
+        <set>
+            <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+            <if test="deviceId != null">device_id = #{deviceId,jdbcType=VARCHAR},</if>
+            <if test="dataType != null">data_type = #{dataType,jdbcType=VARCHAR},</if>
+            <if test="deviceData != null">device_data = #{deviceData,jdbcType=VARCHAR},</if>
+            <if test="inserter != null">inserter = #{inserter,jdbcType=INTEGER},</if>
+            <if test="insertTime != null">insert_time = #{insertTime,jdbcType=TIMESTAMP},</if>
+            <if test="updater != null">updater = #{updater,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="isDelete != null">is_delete = #{isDelete,jdbcType=CHAR},</if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 根据ID查询设备数据 -->
+    <select id="selectById" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_data
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据ID查询设备数据实体 -->
+    <select id="selectEntityById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_data
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询设备数据列表 -->
+    <select id="selectAll" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_data ORDER BY insert_time desc
+    </select>
+
+    <!-- 带参数查询设备数据列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select s1.*,s2.name productName,s3.name deviceName
+        from t_device_data s1,t_product s2,t_device s3
+        where s1.device_id=s3.device_id and s2.id=s3.product_id
+        <if test="deviceName !=null and deviceName!=''">
+            and s3.name like concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceId !=null and deviceId!=''">
+            and s1.device_id like concat('%',#{deviceId},'%')
+        </if>
+        <if test="beginTime !=null and beginTime!=''">
+            AND s1.insert_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime !=null and endTime!=''">
+            AND (s1.insert_time &lt;= #{endTime})
+        </if>
+        ORDER BY s1.insert_time desc
+    </select>
+
+
+    <!-- 带参数查询设备数据列表 带分页-->
+    <select id="selectPageList" resultType="java.util.Map">
+        select s1.device_id, s1.insert_time, s1.device_data, s3.name deviceName
+        from t_device_data s1,t_device s3
+        where s1.device_id=s3.device_id
+        <if test="deviceName !=null and deviceName!=''">
+            and s3.name like concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceId !=null and deviceId!=''">
+            and s1.device_id like concat('%',#{deviceId},'%')
+        </if>
+        <if test="beginTime !=null and beginTime!=''">
+            AND s1.insert_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime !=null and endTime!=''">
+            AND (s1.insert_time &lt;= #{endTime})
+        </if>
+    </select>
+
+</mapper>
